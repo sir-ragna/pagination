@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template
+from datetime import datetime
 import os
 import sqlite3
 
@@ -44,6 +45,27 @@ def get_posts_offset_based(offset=0, amount=5):
             posts.append(post)
         return posts
 
+def get_posts_cursor_based(cursor, amount=5):
+    with sqlite3.connect(app.config['DATABASE']) as conn:
+        cursor = conn.execute("""
+            SELECT attachment_id, attachment_filename, attachment_url, 
+                attachment_message_id, message_content, message_author, 
+                message_channel, Timestamp
+            FROM attachments
+            JOIN messages ON attachment_message_id = message_id
+            WHERE datetime(?) > datetime(Timestamp)
+            ORDER BY datetime(Timestamp) DESC
+            LIMIT ?;
+        """, (cursor, amount))
+        rows = cursor.fetchall()
+        posts = []
+        timestamp_last_post = cursor # init with cursor
+        for row in rows:
+            post = Post(*row)
+            posts.append(post)
+            timestamp_last_post = post.timestamp
+        
+        return posts, timestamp_last_post
 #endregion
 
 #region routes
@@ -68,8 +90,10 @@ def offset_based(page):
 @app.route('/cursor')
 def cursor_based():
     timestamp = request.args.get('cursor')
-    # get content
-    return timestamp
+    if timestamp == None:
+        timestamp = datetime.utcnow().isoformat()
+    posts, last_post_timestamp = get_posts_cursor_based(timestamp)
+    return render_template('cursor_based.html.j2', posts=posts, cursor=last_post_timestamp)
 
 #endregion
 
