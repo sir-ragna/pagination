@@ -15,10 +15,12 @@
 <div class="row navigation">
     <div class="col">
         {% if previouspage < 1 %}
-            <a href="{{ url_for('homepage') }}">home</a>
         {% else %}
             <a href="{{ url_for('offset_based', page=previouspage) }}">previous page</a>
         {% endif %}
+    </div>
+    <div class="col">
+            <a href="{{ url_for('homepage') }}">home</a>
     </div>
     <div class="col">
         <a href="{{ url_for('offset_based', page=nextpage) }}">next page</a>
@@ -44,10 +46,12 @@
     <div class="row navigation">
         <div class="col">
             {% if previouspage < 1 %}
-                <a href="{{ url_for('homepage') }}">home</a>
             {% else %}
                 <a href="{{ url_for('offset_based', page=previouspage) }}">previous page</a>
             {% endif %}
+        </div>
+        <div class="col">
+                <a href="{{ url_for('homepage') }}">home</a>
         </div>
         <div class="col">
             <a href="{{ url_for('offset_based', page=nextpage) }}">next page</a>
