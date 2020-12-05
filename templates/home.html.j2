@@ -1,0 +1,12 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1>How would you like your feed?</h1>
+            <ul>
+                <li><a href="{{ url_for('offset_based', page=1) }}">limit based</a></li>
+                <li><a href="{{ url_for('cursor_based') }}">cursor based</a></li>
+            </ul>
+        </div>
+    </div>
+    
+</div>
