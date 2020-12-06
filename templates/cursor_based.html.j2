@@ -10,19 +10,8 @@
 {% endblock head %}
 
 {% block content %}
-
 <div class="container">
-    <div class="row navigation">
-        <div class="col">
-            <a href="{{ url_for('cursor_based') }}">start</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('homepage') }}">home</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('cursor_based') }}?cursor={{cursor}}">next page</a>
-        </div>
-    </div> <!-- end .row.navigation -->
+    <a href="{{ url_for('homepage') }}">home</a>
     <div id="feed">
         {% for post in posts %}
             <div class="row">
@@ -42,17 +31,62 @@
             <hr>
         {% endfor %}
     </div> <!-- end #feed -->
-    <div class="row navigation">
-        <div class="col">
-            <a href="{{ url_for('cursor_based') }}">start</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('homepage') }}">home</a>
-        </div>
-        <div class="col">
-            <a href="{{ url_for('cursor_based') }}?cursor={{cursor}}">next page</a>
-        </div>
-    </div> <!-- end .row.navigation -->
+
+    <button onclick="morePosts()" class="btn btn-outline-dark my-5" 
+        style="margin:auto; display:block;">More Posts</button>
+
 </div> <!-- end .container -->
 
+<script>
+function getRequest(url, callback) {
+    /* This is the old-school-style for performing requests to the server
+     * New-school way: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+     **/
+    var request = new XMLHttpRequest();
+    request.open("GET", url);
+    request.onreadystatechange = function(){
+        if (request.readyState === 4 // readyState 4 means DONE
+            && request.status === 200 // status 200 means SUCCESS
+            && callback != undefined) {
+            callback(request);
+        }
+    };
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send(null);
+}
+
+var cursor = "{{cursor}}";
+function morePosts() {
+    var url = "/cursor?cursor=" + cursor;
+    getRequest(url, function(request) {
+        console.log(request);
+        var posts =  JSON.parse(request.response);
+        var i, post, divRow, htmlStr;
+        var feed = document.getElementById('feed');
+        for(i=0; i < posts.length; i++) {
+            post = posts[i];
+            divRow = document.createElement('div');
+            divRow.className = "row";
+            htmlStr = '<div class="col">' + 
+                '<span class="nickname">' + post.nickname + '</span>' + 
+                '<span class="timestamp">' + post.timestamp + '</span>' +
+                '<br>' + '<span class="message">' + post.content + '</span>' + 
+                '<br>';
+            if (post.type === 'img') {
+                htmlStr += '<img src="' + post.url + '"/>'
+            } else {
+                htmlStr += '<a href="' + post.url + '">' + post.filename + '</a>'
+            }
+            htmlStr += '</div>';
+            divRow.innerHTML = htmlStr;
+            feed.appendChild(divRow);
+
+            cursor = post.timestamp; // Set the cursor on the last found post
+        }
+    });
+}
+
+
+
+</script>
 {% endblock content %}

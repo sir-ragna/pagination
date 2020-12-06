@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from datetime import datetime
 import os
 import sqlite3
@@ -25,6 +25,16 @@ class Post():
         self.nickname = message_author.split('#')[0]
         self.channel = message_channel
         self.timestamp = timestamp
+    def toDict(self):
+        """Create a dict of the Post object so it can be converted to JSON"""
+        return {
+            "nickname": self.nickname,
+            "timestamp": self.timestamp,
+            "content": self.content,
+            "type": self.type,
+            "url": self.url,
+            "filename": self.filename
+        }
 
 #region database stuff
 def get_posts_offset_based(offset=0, amount=5):
@@ -93,6 +103,12 @@ def cursor_based():
     if timestamp == None:
         timestamp = datetime.utcnow().isoformat()
     posts, last_post_timestamp = get_posts_cursor_based(timestamp)
+
+    # Handle request from javascript
+    if request.content_type == 'application/json':
+        posts = [post.toDict() for post in posts]
+        return jsonify(posts), 200
+    
     return render_template('cursor_based.html.j2', posts=posts, cursor=last_post_timestamp)
 
 #endregion
