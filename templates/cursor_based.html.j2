@@ -86,7 +86,13 @@ function morePosts() {
     });
 }
 
-
+window.addEventListener('scroll', function() {
+    var docEle = document.documentElement;
+    if (docEle.clientHeight + docEle.scrollTop >= docEle.scrollHeight - 500) {
+        console.log("bottom reached");
+        morePosts();
+    }
+})
 
 </script>
 {% endblock content %}
